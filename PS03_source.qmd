@@ -1,6 +1,6 @@
 ---
 title: "Problem Set 03: Data Wrangling"
-author: "Your Name"
+author: "Patrick Heavey"
 date: last-modified
 date-format: "[Last modified on] MMMM DD, YYYY HH:mm:ss zzz"
 format: 
@@ -59,10 +59,13 @@ Examine `txhousing` in the data viewer. You can accomplish this two different wa
 ::: {.callout-important icon="false" collapse="false" title="Problem 1 Answers"}
 ```{r}
 # Type your code and comments inside the code chunk
-
+tail(txhousing, n = 1)
+txhousing$city[8602]
+last <- nrow(txhousing)
+last
 ```
 
--   Delete this and put your text answer here.
+-   The last city listed in `txhousing` is Wichita Falls.
 :::
 
 ::: {.callout-note icon="false" title="Problem 2"}
@@ -70,7 +73,7 @@ Examine the variable descriptions by typing `?txhousing` in the **console**. Wha
 :::
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 2 Answers"}
--   Delete this and put your text answer here.
+-   Total active listings for the housing market in Texas.
 :::
 
 # Data Wrangling Review
@@ -241,7 +244,9 @@ Write a code chunk to remove the inventory variable. Save the results in a data 
 ::: {.callout-important icon="false" collapse="false" title="Problem 3 Answers"}
 ```{r}
 # Type your code and comments inside the code chunk
-
+txhousing <- txhousing |>
+  select(-inventory)
+head(txhousing)
 ```
 :::
 
@@ -256,7 +261,12 @@ txhousing |>
 ::: {.callout-important icon="false" collapse="false" title="Problem 4 Answers"}
 ```{r}
 # Type your code and comments inside the code chunk
-
+dallas_sub <- txhousing |>
+  filter(city == "Dallas" & (year == 2012 | year == 2013))
+head(dallas_sub)
+# The previous code doesn't give the requested answer because R views the code
+# as a request for 2012 data in Dallas, followed by data from all cities in
+# 2013.
 ```
 :::
 
@@ -267,7 +277,9 @@ Add a column to the `dallas_sub` data set called `prct_sold` that calculates the
 ::: {.callout-important icon="false" collapse="false" title="Problem 5 Answers"}
 ```{r}
 # Type your code and comments inside the code chunk
-
+dallas_sub <- dallas_sub |>
+  mutate(prct_sold = sales / listings * 100)
+tail(dallas_sub)
 ```
 :::
 
@@ -278,7 +290,10 @@ Calculate the **average** percentage of listings that were sold in Dallas **in e
 ::: {.callout-important icon="false" collapse="false" title="Problem 6 Answers"}
 ```{r}
 # Type your code and comments inside the code chunk
-
+dallas_summary <- dallas_sub |>
+  group_by(month) |>
+  summarize(mean_prct_sold = mean(prct_sold))
+dallas_summary
 ```
 :::
 
@@ -289,7 +304,8 @@ Arrange the `dallas_summary` in `desc`ending order based on the average percenta
 ::: {.callout-important icon="false" collapse="false" title="Problem 7 Answers"}
 ```{r}
 # Type your code and comments inside the code chunk
-
+dallas_summary |>
+  arrange(desc(mean_prct_sold))
 ```
 :::
 
@@ -312,7 +328,7 @@ txhousing |>
   kable()
 ```
 
--   Delete this and put your text answer here.
+-   This code chunk does all the previous problems 4-7 in one pipeline.
 :::
 
 ::: {.callout-note icon="false" title="Problem 9"}
@@ -322,10 +338,14 @@ In January of 2015, what city had the fewest houses listed for sale? Report the 
 ::: {.callout-important icon="false" collapse="false" title="Problem 9 Answers"}
 ```{r}
 # Type your code and comments inside the code chunk
-
+txhousing |>
+  filter(year == 2015, month == 1) |>
+  arrange(listings) |>
+  select(city, listings) |>
+  head(1)
 ```
 
--   Delete this and put your text answer here.
+-   San Marcos, with 85 houses listed.
 :::
 
 ::: {.callout-note icon="false" title="Problem 10"}
@@ -335,10 +355,13 @@ In 2012, in which month were the most houses sold in Texas? Report the month wer
 ::: {.callout-important icon="false" collapse="false" title="Problem 10 Answers"}
 ```{r}
 # Type your code and comments inside the code chunk
-
+txhousing |>
+  filter(year == 2012) |>
+  arrange(desc(sales)) |>
+  select(month, sales)
 ```
 
--   Delete this and put your text answer here.
+-   The most houses sold was in August, with 7112 sold.
 :::
 
 ::: {.callout-note icon="false" title="Problem 11"}
@@ -348,7 +371,11 @@ Generate a **single** table that shows the total number of houses sold in **Aust
 ::: {.callout-important icon="false" collapse="false" title="Problem 11 Answers"}
 ```{r}
 # Type your code and comments inside the code chunk
-
+txhousing |>
+  filter(city %in% c("Austin", "Dallas"),
+         year %in% c(2000, 2001)) |>
+  group_by(city) |>
+  summarize(total_sales = sum(sales))
 ```
 :::
 
